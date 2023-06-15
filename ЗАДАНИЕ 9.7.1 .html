@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link href='https://fonts.googleapis.com/css?family=Inter' rel='stylesheet'>
+    <script defer src="page2.js"></script>
+    <title>Запрос картинок</title>
+</head>
+
+<body>
+    <h1>Запрос картинок</h1>
+
+  <label for="pageNumber">Номер страницы:</label>
+  <input type="text" id="pageNumber" placeholder="Введите номер страницы (1-10)">
+
+  <label for="limit">Лимит:</label>
+  <input type="text" id="limit" placeholder="Введите лимит (1-10)">
+
+  <button id="requestButton">Запрос</button>
+
+  <div id="result"></div>
+
+  <script>
+    // Получение сохраненных значений из localStorage
+    const savedPageNumber = localStorage.getItem('pageNumber');
+    const savedLimit = localStorage.getItem('limit');
+
+    // Установка сохраненных значений в input'ы
+    document.getElementById('pageNumber').value = savedPageNumber || '';
+    document.getElementById('limit').value = savedLimit || '';
+
+    // Функция для выполнения запроса картинок
+    function makeRequest() {
+      const pageNumberInput = document.getElementById('pageNumber');
+      const limitInput = document.getElementById('limit');
+      const resultDiv = document.getElementById('result');
+
+      const pageNumber = parseInt(pageNumberInput.value);
+      const limit = parseInt(limitInput.value);
+
+      // Проверка введенных значений
+      let errorMessage = '';
+
+      if (isNaN(pageNumber) || pageNumber < 1 || pageNumber > 10) {
+        errorMessage += 'Номер страницы вне диапазона от 1 до 10. ';
+      }
+
+      if (isNaN(limit) || limit < 1 || limit > 10) {
+        errorMessage += 'Лимит вне диапазона от 1 до 10. ';
+      }
+
+      if (errorMessage) {
+        resultDiv.textContent = errorMessage;
+        return;
+      }
+
+      // Создание URL с введенными значениями
+      const url = `https://picsum.photos/v2/list?page=${pageNumber}&limit=${limit}`;
+
+      // Выполнение запроса
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          // Вывод списка картинок
+          const images = data.map(item => `<img src="${item.download_url}" alt="Image">`);
+          resultDiv.innerHTML = images.join('');
+
+          // Сохранение введенных значений в localStorage
+          localStorage.setItem('pageNumber', pageNumber);
+          localStorage.setItem('limit', limit);
+        })
+        .catch(error => {
+          console.error('Произошла ошибка:', error);
+          resultDiv.textContent = 'Произошла ошибка при выполнении запроса.';
+        });
+    }
+
+    // Обработчик клика на кнопке
+    document.getElementById('requestButton').addEventListener('click', makeRequest);
+  </script>
+</body>
+
+</html>
